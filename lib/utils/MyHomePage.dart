@@ -233,3 +233,7 @@ class MyHomePageState extends State<MyHomePage> {
 extension StringExtension on String {
   String get toCap => length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
 }
+
+class Print {
+
+}
