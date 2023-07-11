@@ -1,6 +1,6 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
-import 'package:flutter_open_weather/utils/MyHomePage.dart';
+import 'package:flutter_open_weather/utils/ui/MyHomePage.dart';
 
 void main() {
   runApp(const WeatherApp());
