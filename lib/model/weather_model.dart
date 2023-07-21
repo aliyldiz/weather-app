@@ -28,7 +28,7 @@ class WeatherModel {
         this.id,
         this.name,
         this.dt_txt,
-        this.cod});
+        this.cod,});
 
   WeatherModel.fromJson(Map<String, dynamic> json){
     coord = json['coord'] != null ? Coord.fromJson(json['coord']) : null;

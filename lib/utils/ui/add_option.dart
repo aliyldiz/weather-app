@@ -1,120 +1,147 @@
+import 'dart:convert';
 import 'dart:core';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_open_weather/location/location_service.dart';
+import 'package:flutter_open_weather/model/search_model.dart';
 import 'package:flutter_open_weather/model/weather_model.dart';
 import 'package:flutter_open_weather/api/weather_api.dart';
-import 'package:flutter_open_weather/utils/ui/MyHomePage.dart';
-import 'package:flutter_open_weather/utils/ui/add_option.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/date_symbol_data_local.dart';
 
-import '../helpers/weather_bg.dart';
+import 'my_home_page.dart';
 
 class AddOption extends StatefulWidget {
+  final String? name;
   final WeatherModel? weatherData;
   final List<WeatherModel>? forecastData;
   final List<WeatherModel>? favPlaces;
-  const AddOption(this.weatherData, this.forecastData, this.favPlaces, {Key? key}) : super(key: key);
+
+  const AddOption(this.weatherData, this.forecastData, this.favPlaces,
+      {Key? key, this.name})
+      : super(key: key);
 
   @override
   AddOptionState createState() => AddOptionState();
 }
 
 class AddOptionState extends State<AddOption> {
+  bool isSearching = false;
+  final WeatherApi weatherApi = WeatherApi();
   WeatherModel? _weatherData;
   List<WeatherModel>? _forecastData;
-  List<WeatherModel>? _favPlaces;
+  List<WeatherModel>? _favPlaces = [];
+  late final LocSvc _locSvc;
 
+
+  // ignore: prefer_typing_uninitialized_variables
+  var city;
   final TextEditingController searchCtrl = TextEditingController();
 
   @override
   void initState() {
     _weatherData = widget.weatherData;
-    _forecastData = widget.forecastData;
     _favPlaces = widget.favPlaces;
+    _locSvc = LocSvc(context);
+    getWeatherData();
     super.initState();
+  }
+
+  getWeatherData({String? q}) async {
+    Position cPosition = await _locSvc.getCurrentPosition();
+    (WeatherModel, List<WeatherModel>) tempData;
+    if (q == null) {
+      tempData = await weatherApi.getWeatherData(pos: cPosition);
+    } else {
+      tempData = await weatherApi.getWeatherData(q: q);
+    }
+    _weatherData = tempData.$1;
+    _forecastData = tempData.$2;
+    city = await weatherApi.getLocation(cPosition);
+    setState(() {});
+  }
+
+  getCitySearch(String? q) async {
+    var response = (await http.get(Uri.parse(
+        'https://api.geoapify.com/v1/geocode/autocomplete?text=$q&type=city&format=json&apiKey=552e057cf7694553818c4b2cf3ccd1f7')));
+    return SearchModel.fromJson(jsonDecode(response.body));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        actions: [
-          TextButton(
-              onPressed: () {
-                _favPlaces?.add(_weatherData!);
-                Navigator.pop(context, _favPlaces);
-              },
-              child: const Text('Ekle')
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          _weatherData != null
-              ? background(
-                  _weatherData?.weather?.first.id,
-                  MediaQuery.of(context).size.height,
-                  MediaQuery.of(context).size.width,
-                )
-              : const SizedBox(),
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 30),
-                Text(
-                  _weatherData?.name.toString() ?? '',
-                  //weatherApi.getWeatherData(q: searchCtrl.text).toString(),
-                  style: const TextStyle(shadows: <Shadow>[
-                    Shadow(
-                      blurRadius: 3.0,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                    ),
-                  ], fontSize: 30),
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
+    return WillPopScope(
+      onWillPop: () async {
+        if (isSearching) {
+          setState(() {
+            searchCtrl.text = '';
+          });
+        } else {
+          return true;
+        }
+        return false;
+      },
+      child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: Column(
+            children: [
+              const Padding(padding: EdgeInsets.only(top: 55, left: 320)),
+              TextButton(
+                  onPressed: () {
+                    _favPlaces?.add(_weatherData!);
+                    Navigator.pop(context, _favPlaces);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MyHomePage(),
+                      ),
+                    );
+                  },
+                  child: const Text('Ekle')),
+              Text(
+                _weatherData?.name.toString() ?? '',
+                style: const TextStyle(shadows: <Shadow>[
+                  Shadow(
+                    blurRadius: 3.0,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                  ),
+                ], fontSize: 30),
+                maxLines: 1,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: Row(
+                  children: List.generate(
+                      1,
+                      (index) => _weatherData != null
+                          ? Expanded(
+                              flex: 20,
+                              child: _weatherCard(_weatherData!, true))
+                          : const SizedBox()),
                 ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 15),
+              ),
+              Card(
+                color: Colors.lightBlue[500],
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
                   child: Row(
                     children: List.generate(
-                        1,
-                        (index) => _weatherData != null
+                        5,
+                        (index) => _forecastData != null
                             ? Expanded(
                                 flex: 20,
-                                child: _weatherCard(_weatherData!, true))
+                                child:
+                                    _weatherCard(_forecastData![index], false))
                             : const SizedBox()),
                   ),
                 ),
-                Card(
-                  color: Colors.lightBlue[500],
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Row(
-                      children: List.generate(
-                          5,
-                          (index) => _forecastData != null
-                              ? Expanded(
-                                  flex: 20,
-                                  child:
-                                      _weatherCard(_forecastData![index], false))
-                              : const SizedBox()),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+              ),
+            ],
+          )),
     );
   }
 
