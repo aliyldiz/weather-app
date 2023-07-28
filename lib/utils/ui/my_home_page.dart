@@ -5,12 +5,18 @@ import 'package:flutter_open_weather/location/location_service.dart';
 import 'package:flutter_open_weather/model/search_model.dart';
 import 'package:flutter_open_weather/model/weather_model.dart';
 import 'package:flutter_open_weather/api/weather_api.dart';
-import 'package:flutter_open_weather/utils/ui/add_option.dart';
+import 'package:flutter_open_weather/utils/ui/current_page.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:intl/intl.dart';
-import '../helpers/weather_bg.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/date_symbol_data_local.dart';
+import 'package:lottie/lottie.dart';
+import 'add_option.dart';
+import 'package:flutter_open_weather/utils/ui/globals.dart' as globals;
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' as latlng;
+import 'package:flutter_map/plugin_api.dart' as mapplugin;
+
+import 'globals.dart';
 
 class MyHomePage extends StatefulWidget {
   final String? name;
@@ -25,12 +31,12 @@ class MyHomePageState extends State<MyHomePage> {
   Icon _searchIcon = const Icon(Icons.search);
   bool isSearching = false;
   final WeatherApi weatherApi = WeatherApi();
-  WeatherModel? _weatherData;
-  List<WeatherModel>? _forecastData;
-  List<WeatherModel>? _favPlaces = [];
-  late final LocSvc _locSvc;
+  WeatherModel? weatherData;
+  List<WeatherModel>? forecastData;
+  late final LocSvc locSvc;
 
-  static String _displayStringForOption(Results option) => option.city;
+  static String displayStringForOption(Results option) =>
+      '${option.city}, ${option.country}';
 
   // ignore: prefer_typing_uninitialized_variables
   var city;
@@ -38,21 +44,21 @@ class MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    _locSvc = LocSvc(context);
+    locSvc = LocSvc(context);
     getWeatherData();
     super.initState();
   }
 
   getWeatherData({String? q}) async {
-    Position cPosition = await _locSvc.getCurrentPosition();
+    Position cPosition = await locSvc.getCurrentPosition();
     (WeatherModel, List<WeatherModel>) tempData;
     if (q == null) {
       tempData = await weatherApi.getWeatherData(pos: cPosition);
     } else {
       tempData = await weatherApi.getWeatherData(q: q);
     }
-    _weatherData = tempData.$1;
-    _forecastData = tempData.$2;
+    weatherData = tempData.$1;
+    forecastData = tempData.$2;
     city = await weatherApi.getLocation(cPosition);
     setState(() {});
   }
@@ -63,43 +69,39 @@ class MyHomePageState extends State<MyHomePage> {
     return SearchModel.fromJson(jsonDecode(response.body));
   }
 
-  //autoComplete hintText add
   Widget _searchTextField() {
     return isSearching
         ? Autocomplete<Results>(
-      displayStringForOption: _displayStringForOption,
-      optionsBuilder: (TextEditingValue searchCtrl) async {
-        if (searchCtrl.text.length > 2) {
-          SearchModel tempApi =
-          await getCitySearch(searchCtrl.text.toLowerCase());
-          if (searchCtrl.text == '') {
-            return const Iterable<Results>.empty();
-          }
-          return tempApi.results!
-              .where((Results option) =>
-              option.city
-                  .toLowerCase()
-                  .startsWith(searchCtrl.text.toLowerCase()))
-              .toList();
-        } else {
-          return const Iterable<Results>.empty();
-        }
-      },
-      onSelected: (Results text) {
-        getWeatherData(q: _displayStringForOption(text));
-
-
-        // ignore: use_build_context_synchronously
-        _favPlaces = Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  AddOption(_weatherData, _forecastData, _favPlaces)),
-        ) as List<WeatherModel>?;
-
-        debugPrint('You just selected ${_displayStringForOption(text)}');
-      },
-    ) : const SizedBox();
+            displayStringForOption: displayStringForOption,
+            optionsBuilder: (TextEditingValue searchCtrl) async {
+              if (searchCtrl.text.length > 2) {
+                SearchModel tempApi =
+                    await getCitySearch(searchCtrl.text.toLowerCase());
+                if (searchCtrl.text == '') {
+                  return const Iterable<Results>.empty();
+                }
+                return tempApi.results!
+                    .where((Results option) => option.city
+                        .toLowerCase()
+                        .startsWith(searchCtrl.text.toLowerCase()))
+                    .toList();
+              } else {
+                return const Iterable<Results>.empty();
+              }
+            },
+            onSelected: (Results text) {
+              getWeatherData(q: displayStringForOption(text));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => AddOption(
+                          qSelect: displayStringForOption(text),
+                        )),
+              );
+              debugPrint('You just selected ${displayStringForOption(text)}');
+            },
+          )
+        : const SizedBox();
   }
 
   void _onSearchPressed() {
@@ -132,204 +134,169 @@ class MyHomePageState extends State<MyHomePage> {
         return false;
       },
       child: Scaffold(
+          drawer: drawer(),
           resizeToAvoidBottomInset: false,
-          body: Column(
-            children: [
-              const Padding(padding: EdgeInsets.only(top: 55, left: 320)),
-              Row(
-                children: [
-                  IconButton(
-                      onPressed: () {
-                        Drawer(
-                            elevation: 0.0,
-                            child: ListView(children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  const Text('Favoriler'),
-                                  const Padding(padding: EdgeInsets.all(10.0)),
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.pop(context, _favPlaces);
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Container(
-                                            height: 100,
-                                            width: 100,
-                                            padding: const EdgeInsets.all(1.0),
-                                            decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    width: 2.0,
-                                                    color: Colors.blue),
-                                                borderRadius:
-                                                const BorderRadius.all(
-                                                    Radius.circular(3.0))),
-                                            child: Stack(
-                                                children: List.generate(
-                                                    _favPlaces!.length,
-                                                        (index) =>
-                                                        Stack(
-                                                          children: [
-                                                            (background(
-                                                                _favPlaces?[
-                                                                index]
-                                                                    .weather
-                                                                    ?.first
-                                                                    .id,
-                                                                MediaQuery
-                                                                    .of(
-                                                                    context)
-                                                                    .size
-                                                                    .height,
-                                                                MediaQuery
-                                                                    .of(
-                                                                    context)
-                                                                    .size
-                                                                    .width))
-                                                          ],
-                                                        ))),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ]));
-                      },
-                      icon: const Icon(Icons.menu)),
-                  IconButton(
-                      onPressed: () {
-                        isSearching = false;
-                      }, icon: const Icon(Icons.location_on)),
-                  const Padding(padding: EdgeInsets.only(left: 165)),
-                  SizedBox(
-                    width: 80,
-                    child: _searchTextField(),
-                  ),
-                  IconButton(
-                    onPressed: _onSearchPressed,
-                    icon: _searchIcon,
-                  ),
-                ],
-              ),
-              Text(
-                _weatherData?.name.toString() ?? '',
-                style: const TextStyle(shadows: <Shadow>[
-                  Shadow(
-                    blurRadius: 3.0,
-                    color: Color.fromARGB(255, 0, 0, 0),
-                  ),
-                ], fontSize: 30),
-                maxLines: 1,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 15),
-                child: Row(
-                  children: List.generate(
-                      1,
-                          (index) =>
-                      _weatherData != null
-                          ? Expanded(
-                          flex: 20,
-                          child: _weatherCard(_weatherData!, true))
-                          : const SizedBox()),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                searchButton(),
+                const Padding(
+                  padding: EdgeInsets.only(top: 20.0),
+                  child: CurrentPage(),
                 ),
-              ),
-              Card(
-                color: Colors.lightBlue[500],
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0)),
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    children: List.generate(
-                        5,
-                            (index) =>
-                        _forecastData != null
-                            ? Expanded(
-                            flex: 20,
-                            child: _weatherCard(
-                                _forecastData![index], false))
-                            : const SizedBox()),
-                  ),
-                ),
-              ),
-            ],
+                map()
+              ],
+            ),
           )),
     );
   }
 
-  Widget _weatherCard(WeatherModel wData, bool isToday) {
-    final iconPng =
-        'https://openweathermap.org/img/wn/${wData.weather?.first.icon}@2x.png';
-    initializeDateFormatting('tr_TR', null);
-    Intl.defaultLocale = 'tr_TR';
-    DateFormat dateFormat = isToday ? DateFormat('EEEE') : DateFormat('E');
-    final dateText = dateFormat
-        .format(DateTime.fromMillisecondsSinceEpoch(wData.dt?.toInt() * 1000))
-        .toString();
-    var mainTemp = wData.main?.temp.runtimeType != double
-        ? double.parse(wData.main!.temp.toString())
-        : wData.main?.temp;
-    var tmpTemp = ((mainTemp) * 2).round() / 2;
-    final tempText = '$tmpTemp °C';
-    List<String>? tmpDesc =
-    wData.weather?.first.description.toString().split(' ');
-    for (int i = 0; i < tmpDesc!.length; i++) {
-      tmpDesc[i] = StringExtension(tmpDesc[i]).toCap;
-    }
-    final descText = tmpDesc.join(' ');
+  Widget searchButton() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 220.0, top: 40),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 120,
+            child: _searchTextField(),
+          ),
+          IconButton(
+            onPressed: _onSearchPressed,
+            icon: _searchIcon,
+          ),
+        ],
+      ),
+    );
+  }
 
-    return Column(
-      children: [
-        Text(
-          dateText,
-          style: TextStyle(shadows: const <Shadow>[
-            Shadow(
-              blurRadius: 3.0,
-              color: Color.fromARGB(255, 0, 0, 0),
-            ),
-          ], color: Colors.white, fontSize: isToday ? 45 : 20),
-        ),
-        const SizedBox(height: 8.0),
-        Text(
-          tempText,
-          style: TextStyle(shadows: const <Shadow>[
-            Shadow(
-              blurRadius: 3.0,
-              color: Color.fromARGB(255, 0, 0, 0),
-            ),
-          ], color: Colors.white, fontSize: isToday ? 35 : 14),
-          textAlign: TextAlign.center,
-        ),
-        Image.network(iconPng),
-        Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: SizedBox(
-            height: 50,
-            child: Text(
-              descText,
-              style: TextStyle(shadows: const <Shadow>[
-                Shadow(
-                  blurRadius: 3.0,
-                  color: Color.fromARGB(255, 0, 0, 0),
-                ),
-              ], fontSize: isToday ? 25 : 14),
+  Widget drawer() {
+    return Drawer(
+        elevation: 0.0,
+        child: ListView(children: [
+          const Padding(padding: EdgeInsets.only(top: 15)),
+          const Padding(
+            padding: EdgeInsets.only(left: 8.0),
+            child: Row(
+              children: [
+                Text(
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    'Hava Durumu'),
+              ],
             ),
           ),
-        ),
-      ],
+          const Padding(padding: EdgeInsets.only(top: 20)),
+          Row(
+            children: [
+              IconButton(
+                  onPressed: () {
+                    locSvc.getCurrentPosition();
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.location_on)),
+              const Text('Mevcut Konum'),
+            ],
+          ),
+          favCard(),
+        ]));
+  }
+
+  Widget map() {
+    return Stack(children: [
+      Column(
+        children: [
+          SizedBox(
+            width: 400,
+            height: 400,
+            child: FlutterMap(
+              options: MapOptions(
+                center: const latlng.LatLng(38.2, 29.3),
+                zoom: 6.5,
+              ),
+              children: [
+                Stack(children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.app',
+                  ),
+                  TileLayer(
+                    backgroundColor: Colors.transparent,
+                    urlTemplate:
+                        'https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png',
+                    tileProvider: NetworkTileProvider(
+                        headers: {}, httpClient: MapClient()),
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      mapplugin.Marker(
+                        point: const latlng.LatLng(40.2, 29.3),
+                        width: 80,
+                        height: 80,
+                        builder: (context) => LottieBuilder.network(clearSkyL),
+                      ),
+                    ],
+                  ),
+                ]),
+              ],
+            ),
+          ),
+          //CurrentPage(),
+        ],
+      ),
+    ]);
+  }
+
+  Widget favCard() {
+    return SizedBox(
+      height: double.maxFinite,
+      width: double.infinity,
+      child: ListView.builder(
+          padding: const EdgeInsets.all(8),
+          itemCount: globals.favPlaces?.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Card(
+              child: Slidable(
+                key: const ValueKey(1),
+                endActionPane: ActionPane(
+                  motion: const ScrollMotion(),
+                  dismissible: DismissiblePane(onDismissed: () {}),
+                  children: const [
+                    SlidableAction(
+                      onPressed: doNothing,
+                      backgroundColor: Color(0xFFFE4A49),
+                      foregroundColor: Colors.white,
+                      icon: Icons.delete,
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  height: 103,
+                  width: 300,
+                  child: Text(
+                    '${globals.favPlaces?[index].name}',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+              ),
+            );
+          }),
     );
   }
 }
 
-extension StringExtension on String {
-  String get toCap =>
-      length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
+void doNothing(BuildContext context) {}
+
+class MapClient extends http.BaseClient {
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    //request.url.queryParameters.putIfAbsent('appid',()=> '7b0b2395e0a953df1afeeb7ae7626527');
+    //http.BaseRequest tempReq = request;
+    //print(request.url.toString());
+    return http.Request('GET',
+            Uri.parse("${request.url}?appid=7b0b2395e0a953df1afeeb7ae7626527"))
+        .send();
+
+    //tempReq.finalize();
+    //throw UnimplementedError();
+  }
 }

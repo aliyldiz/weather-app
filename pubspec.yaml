@@ -43,6 +43,11 @@ dependencies:
   anim_search_bar: ^2.0.2
   geocoding: ^2.0.4
   keyboard_actions: ^4.2.0
+  pubglobalupdate: ^0.5.3
+  flutter_slidable: ^3.0.0
+  google_maps_flutter: ^2.4.0
+  flutter_map: ^5.0.0
+  latlong2: ^0.9.0
 
 dev_dependencies:
   flutter_test:

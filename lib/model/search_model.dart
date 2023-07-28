@@ -8,19 +8,19 @@ class SearchModel {
     if (json['results'] != null) {
       results = <Results>[];
       json['results'].forEach((v) {
-        results!.add(new Results.fromJson(v));
+        results!.add(Results.fromJson(v));
       });
     }
-    query = json['query'] != null ? new Query.fromJson(json['query']) : null;
+    query = json['query'] != null ? Query.fromJson(json['query']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.results != null) {
-      data['results'] = this.results!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (results != null) {
+      data['results'] = results!.map((v) => v.toJson()).toList();
     }
-    if (this.query != null) {
-      data['query'] = this.query!.toJson();
+    if (query != null) {
+      data['query'] = query!.toJson();
     }
     return data;
   }
@@ -28,10 +28,10 @@ class SearchModel {
 
 class Results {
   Datasource? datasource;
-  String? country;
+  var country;
   String? countryCode;
   String? state;
-  late String city;
+  var city;
   String? village;
   String? postcode;
   String? district;
@@ -53,7 +53,7 @@ class Results {
 
   Results(
       {this.datasource,
-        this.country,
+        required this.country,
         this.countryCode,
         this.state,
         required this.city,
@@ -96,48 +96,48 @@ class Results {
     addressLine1 = json['address_line1'];
     addressLine2 = json['address_line2'];
     timezone = json['timezone'] != null
-        ? new Timezone.fromJson(json['timezone'])
+        ? Timezone.fromJson(json['timezone'])
         : null;
     plusCode = json['plus_code'];
     plusCodeShort = json['plus_code_short'];
     resultType = json['result_type'];
-    rank = json['rank'] != null ? new Rank.fromJson(json['rank']) : null;
+    rank = json['rank'] != null ? Rank.fromJson(json['rank']) : null;
     placeId = json['place_id'];
-    bbox = json['bbox'] != null ? new Bbox.fromJson(json['bbox']) : null;
+    bbox = json['bbox'] != null ? Bbox.fromJson(json['bbox']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.datasource != null) {
-      data['datasource'] = this.datasource!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (datasource != null) {
+      data['datasource'] = datasource!.toJson();
     }
-    data['country'] = this.country;
-    data['country_code'] = this.countryCode;
-    data['state'] = this.state;
-    data['city'] = this.city;
-    data['village'] = this.village;
-    data['postcode'] = this.postcode;
-    data['district'] = this.district;
-    data['suburb'] = this.suburb;
-    data['street'] = this.street;
-    data['housenumber'] = this.housenumber;
-    data['lon'] = this.lon;
-    data['lat'] = this.lat;
-    data['formatted'] = this.formatted;
-    data['address_line1'] = this.addressLine1;
-    data['address_line2'] = this.addressLine2;
-    if (this.timezone != null) {
-      data['timezone'] = this.timezone!.toJson();
+    data['country'] = country;
+    data['country_code'] = countryCode;
+    data['state'] = state;
+    data['city'] = city;
+    data['village'] = village;
+    data['postcode'] = postcode;
+    data['district'] = district;
+    data['suburb'] = suburb;
+    data['street'] = street;
+    data['housenumber'] = housenumber;
+    data['lon'] = lon;
+    data['lat'] = lat;
+    data['formatted'] = formatted;
+    data['address_line1'] = addressLine1;
+    data['address_line2'] = addressLine2;
+    if (timezone != null) {
+      data['timezone'] = timezone!.toJson();
     }
-    data['plus_code'] = this.plusCode;
-    data['plus_code_short'] = this.plusCodeShort;
-    data['result_type'] = this.resultType;
-    if (this.rank != null) {
-      data['rank'] = this.rank!.toJson();
+    data['plus_code'] = plusCode;
+    data['plus_code_short'] = plusCodeShort;
+    data['result_type'] = resultType;
+    if (rank != null) {
+      data['rank'] = rank!.toJson();
     }
-    data['place_id'] = this.placeId;
-    if (this.bbox != null) {
-      data['bbox'] = this.bbox!.toJson();
+    data['place_id'] = placeId;
+    if (bbox != null) {
+      data['bbox'] = bbox!.toJson();
     }
     return data;
   }
@@ -159,11 +159,11 @@ class Datasource {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['sourcename'] = this.sourcename;
-    data['attribution'] = this.attribution;
-    data['license'] = this.license;
-    data['url'] = this.url;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['sourcename'] = sourcename;
+    data['attribution'] = attribution;
+    data['license'] = license;
+    data['url'] = url;
     return data;
   }
 }
@@ -197,14 +197,14 @@ class Timezone {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['name'] = this.name;
-    data['offset_STD'] = this.offsetSTD;
-    data['offset_STD_seconds'] = this.offsetSTDSeconds;
-    data['offset_DST'] = this.offsetDST;
-    data['offset_DST_seconds'] = this.offsetDSTSeconds;
-    data['abbreviation_STD'] = this.abbreviationSTD;
-    data['abbreviation_DST'] = this.abbreviationDST;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = name;
+    data['offset_STD'] = offsetSTD;
+    data['offset_STD_seconds'] = offsetSTDSeconds;
+    data['offset_DST'] = offsetDST;
+    data['offset_DST_seconds'] = offsetDSTSeconds;
+    data['abbreviation_STD'] = abbreviationSTD;
+    data['abbreviation_DST'] = abbreviationDST;
     return data;
   }
 }
@@ -232,21 +232,21 @@ class Rank {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['importance'] = this.importance;
-    data['confidence'] = this.confidence;
-    data['confidence_city_level'] = this.confidenceCityLevel;
-    data['confidence_street_level'] = this.confidenceStreetLevel;
-    data['match_type'] = this.matchType;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['importance'] = importance;
+    data['confidence'] = confidence;
+    data['confidence_city_level'] = confidenceCityLevel;
+    data['confidence_street_level'] = confidenceStreetLevel;
+    data['match_type'] = matchType;
     return data;
   }
 }
 
 class Bbox {
-  double? lon1;
-  double? lat1;
-  double? lon2;
-  double? lat2;
+  var lon1;
+  var lat1;
+  var lon2;
+  var lat2;
 
   Bbox({this.lon1, this.lat1, this.lon2, this.lat2});
 
@@ -258,11 +258,11 @@ class Bbox {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['lon1'] = this.lon1;
-    data['lat1'] = this.lat1;
-    data['lon2'] = this.lon2;
-    data['lat2'] = this.lat2;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['lon1'] = lon1;
+    data['lat1'] = lat1;
+    data['lon2'] = lon2;
+    data['lat2'] = lat2;
     return data;
   }
 }
@@ -276,14 +276,14 @@ class Query {
   Query.fromJson(Map<String, dynamic> json) {
     text = json['text'];
     parsed =
-    json['parsed'] != null ? new Parsed.fromJson(json['parsed']) : null;
+    json['parsed'] != null ? Parsed.fromJson(json['parsed']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['text'] = this.text;
-    if (this.parsed != null) {
-      data['parsed'] = this.parsed!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['text'] = text;
+    if (parsed != null) {
+      data['parsed'] = parsed!.toJson();
     }
     return data;
   }
@@ -305,11 +305,11 @@ class Parsed {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['housenumber'] = this.housenumber;
-    data['street'] = this.street;
-    data['city'] = this.city;
-    data['expected_type'] = this.expectedType;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['housenumber'] = housenumber;
+    data['street'] = street;
+    data['city'] = city;
+    data['expected_type'] = expectedType;
     return data;
   }
 }

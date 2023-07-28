@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'dart:convert';
 import 'package:http/http.dart';
 
+
 class WeatherApi {
   static const baseUrl = 'api.openweathermap.org';
   static const apiWeather = '/data/2.5/weather';
@@ -11,6 +12,14 @@ class WeatherApi {
   static const appId = '7b0b2395e0a953df1afeeb7ae7626527';
   static const baseLocUrl = 'opencage-geocoder.p.rapidapi.com';
   static const locPath = '/geocode/v1/json';
+
+  static const mBaseUrl = 'maps.openweathermap.org';
+  static const mapApi = '/maps/2.0/weather/{op}/{2}/{2}/{2}';
+
+  Map<String, dynamic> mapApiPrm = {
+    'lat' : '26',
+    'lon' : '45'
+  };
 
   Map<String, String> geoHeader = {
     'X-RapidAPI-Key' : '1adc78278dmshd9d49a61e7fc226p1fd8d9jsnd1ba7af1865f',
@@ -51,7 +60,7 @@ class WeatherApi {
     jsonDecode(forecastResponse.body)['list'];
 
     List<WeatherModel> tempList = List.generate(forecastList.length, (index) => WeatherModel.fromJson(forecastList[index]));
-    tempList.removeWhere((fData) => !fData.dt_txt.toString().contains('12:00:00'));
+    tempList.removeWhere((fData) => !fData.dt_txt.toString().contains('09:00:00'));
 
     return (WeatherModel.fromJson(jsonDecode(countryResponse.body)), tempList);
   }
