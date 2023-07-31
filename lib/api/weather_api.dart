@@ -60,7 +60,7 @@ class WeatherApi {
     jsonDecode(forecastResponse.body)['list'];
 
     List<WeatherModel> tempList = List.generate(forecastList.length, (index) => WeatherModel.fromJson(forecastList[index]));
-    tempList.removeWhere((fData) => !fData.dt_txt.toString().contains('09:00:00'));
+    tempList.removeWhere((fData) => !fData.dt_txt.toString().contains('12:00:00'));
 
     return (WeatherModel.fromJson(jsonDecode(countryResponse.body)), tempList);
   }
