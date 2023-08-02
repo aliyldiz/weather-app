@@ -14,6 +14,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:flutter_map/plugin_api.dart' as mapplugin;
 import 'package:intl/date_symbol_data_local.dart';
+import 'globals.dart';
 
 class MyHomePage extends StatefulWidget {
   final String? name;
@@ -32,12 +33,14 @@ class MyHomePageState extends State<MyHomePage> {
   List<WeatherModel>? forecastData;
   late final LocSvc locSvc;
   static Position? cPosition;
-  static bool isMapOption = false;
+  static Position? currentPosition;
+  bool isMapOption = false;
   bool isAddOption = false;
+  static bool isFavBg = false;
   static String mapSelected = 'temp_new';
   static double? markerLat = cPosition!.latitude;
   static double? markerLon = cPosition!.longitude;
-  static String? backGra = weatherData?.weather?.first.icon;
+  late Results selectedCity;
 
   static String displayStringForOption(Results option) =>
       '${option.city}, ${option.country}';
@@ -55,6 +58,7 @@ class MyHomePageState extends State<MyHomePage> {
 
   getWeatherData({String? q}) async {
     cPosition = await locSvc.getCurrentPosition();
+    currentPosition = cPosition;
     (WeatherModel, List<WeatherModel>) tempData;
     if (q == null) {
       tempData = await weatherApi.getWeatherData(pos: cPosition);
@@ -66,7 +70,10 @@ class MyHomePageState extends State<MyHomePage> {
     city = await weatherApi.getLocation(cPosition!);
     markerLat = weatherData?.coord?.lat;
     markerLon = weatherData?.coord?.lon;
-    setState(() {});
+
+    setState(() {
+      currentPosition;
+    });
   }
 
   getCitySearch(String? q) async {
@@ -91,13 +98,29 @@ class MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  static void _onMapPressed() {
-    isMapOption = !isMapOption;
+  void _onMapPressed() {
+    setState(() {
+      isMapOption = !isMapOption;
+    });
   }
 
   void addItemToList() {
     setState(() {
-      globals.favPlaces?.insert(0, weatherData!);
+      //for or toList;
+
+      bool haveCity = false;
+      for (var e in globals.favPlaces!) {
+        if (e.name!.toLowerCase() ==
+            selectedCity.city.toString().toLowerCase()) {
+          haveCity = true;
+          break;
+        }
+      }
+
+      if (!haveCity) {
+        globals.favPlaces?.insert(0, weatherData!);
+      } else {
+      }
     });
   }
 
@@ -114,61 +137,80 @@ class MyHomePageState extends State<MyHomePage> {
         }
         return false;
       },
-      child: Scaffold(
-          drawer: drawer(),
-          resizeToAvoidBottomInset: false,
-          body: Stack(children: [
-            Image(
-              image: background(),
-              fit: BoxFit.cover,
-              height: double.infinity,
-              width: double.infinity,
-              alignment: Alignment.center,
-            ),
-            SingleChildScrollView(
+      child: weatherData != null
+          ? Scaffold(
+              drawer: drawer(),
+              resizeToAvoidBottomInset: false,
+              body: Stack(children: [
+                Image(
+                  image: background(),
+                  fit: BoxFit.cover,
+                  height: double.infinity,
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                ),
+                SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      isAddOption ? addOption() : searchButton(),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0, bottom: 20),
+                        child: currentPage(),
+                      ),
+                      detail(),
+                      map(),
+                    ],
+                  ),
+                ),
+              ]))
+          : const Padding(
+              padding: EdgeInsets.only(top: 188.0),
               child: Column(
                 children: [
-                  isAddOption
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 40.0),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                  onPressed: () {
-                                    //Navigator.pop(context);
-                                  },
-                                  icon: const Icon(Icons.keyboard_arrow_left)),
-                              const Padding(
-                                  padding: EdgeInsets.only(left: 275)),
-                              TextButton(
-                                  onPressed: () {
-                                    //debugPrint(widget.qSelect);
-                                    addItemToList();
-                                    isAddOption = false;
-                                    isSearching = false;
-                                    _searchIcon = const Icon(Icons.search);
-                                    markerLat = weatherData?.coord?.lat;
-                                    markerLon = weatherData?.coord?.lon;
-                                    //print(weatherData?.coord?.lat);
-                                    //print(weatherData?.coord?.lon);
-                                    map();
-                                    //Navigator.pop(context);
-                                  },
-                                  child: const Text('Ekle')),
-                            ],
-                          ),
-                        )
-                      : searchButton(),
+                  SizedBox(
+                      height: 90,
+                      width: 90,
+                      child: Image(
+                          image:
+                              AssetImage('assets/images/detail/welcome.png'))),
                   Padding(
-                    padding: const EdgeInsets.only(top: 20.0, bottom: 20),
-                    child: currentPage(),
+                    padding: EdgeInsets.only(top: 100.0),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
                   ),
-                  detail(),
-                  map(),
                 ],
               ),
             ),
-          ])),
+    );
+  }
+
+  Widget addOption() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 40.0),
+      child: Row(
+        children: [
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  isAddOption = false;
+                });
+              },
+              icon: const Icon(Icons.keyboard_arrow_left)),
+          const Padding(padding: EdgeInsets.only(left: 260)),
+          TextButton(
+              onPressed: () {
+                addItemToList();
+                isAddOption = false;
+                isSearching = false;
+                _searchIcon = const Icon(Icons.search);
+                markerLat = weatherData?.coord?.lat;
+                markerLon = weatherData?.coord?.lon;
+                map();
+              },
+              child: const Text('Ekle')),
+        ],
+      ),
     );
   }
 
@@ -244,22 +286,14 @@ class MyHomePageState extends State<MyHomePage> {
               }
             },
             onSelected: (Results text) {
+              selectedCity = text;
               getWeatherData(q: displayStringForOption(text));
               isAddOption = true;
               isSearching = false;
               _searchIcon = const Icon(Icons.search);
               markerLat = weatherData?.coord?.lat;
               markerLon = weatherData?.coord?.lon;
-              print(weatherData?.coord?.lat);
-              print(weatherData?.coord?.lon);
               map();
-/*        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => AddOption(
-                qSelect: displayStringForOption(text),
-              )),
-        );*/
               debugPrint('You just selected ${displayStringForOption(text)}');
             },
           )
@@ -268,12 +302,13 @@ class MyHomePageState extends State<MyHomePage> {
 
   static AssetImage background() {
     String bgTheme = '';
+    var backGra = weatherData?.weather?.first.icon;
 
     if ((backGra?.substring(0, 2) == '02') ||
-        (backGra?.substring(0, 2) == '04')) {
-      bgTheme = 'assets/images/background/02-04.jpg';
-    } else if (backGra?.substring(0, 2) == '03') {
-      bgTheme = 'assets/images/background/03.jpg';
+        (backGra?.substring(0, 2) == '03')) {
+      bgTheme = 'assets/images/background/02-03.jpg';
+    } else if (backGra?.substring(0, 2) == '04') {
+      bgTheme = 'assets/images/background/04.jpg';
     } else if ((backGra?.substring(0, 2) == '09') ||
         (backGra?.substring(0, 2) == '10')) {
       bgTheme = 'assets/images/background/09-10.jpg';
@@ -286,20 +321,48 @@ class MyHomePageState extends State<MyHomePage> {
     } else {
       bgTheme = 'assets/images/background/01.jpg';
     }
+    return AssetImage(bgTheme);
+  }
+
+  static AssetImage favBackground(String icon) {
+    String bgTheme = 'assets/images/background/01.jpg';
+
+    if ((icon.substring(0, 2) == '02') || (icon.substring(0, 2) == '03')) {
+      bgTheme = 'assets/images/background/02-03.jpg';
+    } else if (icon.substring(0, 2) == '04') {
+      bgTheme = 'assets/images/background/04.jpg';
+    } else if ((icon.substring(0, 2) == '09') ||
+        (icon.substring(0, 2) == '10')) {
+      bgTheme = 'assets/images/background/09-10.jpg';
+    } else if (icon.substring(0, 2) == '11') {
+      bgTheme = 'assets/images/background/11.jpg';
+    } else if (icon.substring(0, 2) == '13') {
+      bgTheme = 'assets/images/background/13.jpg';
+    } else if (icon.substring(0, 2) == '50') {
+      bgTheme = 'assets/images/background/50.jpg';
+    } else {
+      bgTheme = 'assets/images/background/01.jpg';
+    }
 
     return AssetImage(bgTheme);
   }
 
-  static Widget detail() {
-    DateTime sunset = DateTime.fromMillisecondsSinceEpoch(
-        weatherData?.sys?.sunset.toInt() * 1000);
-    DateTime sunrise = DateTime.fromMillisecondsSinceEpoch(
-        weatherData?.sys?.sunrise.toInt() * 1000);
+  Widget detail() {
+    DateFormat sunsetFormat = DateFormat('Hm');
+    String? sunsetText = sunsetFormat
+        .format(DateTime.fromMillisecondsSinceEpoch(
+            (((weatherData?.sys?.sunset?.toInt())! + weatherData?.timezone) *
+                1000),
+            isUtc: true))
+        .toString();
 
-    int sunsetHour = sunset.hour;
-    int sunsetMin = sunset.minute;
-    int sunriseHour = sunrise.hour;
-    int sunriseMin = sunrise.minute;
+    DateFormat sunriseFormat = DateFormat('Hm');
+    String? sunriseText = sunriseFormat
+        .format(DateTime.fromMillisecondsSinceEpoch(
+            (((weatherData?.sys?.sunrise?.toInt())! + weatherData?.timezone) *
+                1000),
+            isUtc: true))
+        .toString();
 
     return Column(
       children: [
@@ -338,7 +401,7 @@ class MyHomePageState extends State<MyHomePage> {
                                   Opacity(
                                       opacity: 0.7,
                                       child: Text(
-                                        '$sunriseHour: $sunriseMin',
+                                        sunriseText,
                                         style: const TextStyle(
                                             fontSize: 23,
                                             fontWeight: FontWeight.bold),
@@ -391,7 +454,7 @@ class MyHomePageState extends State<MyHomePage> {
                                 Opacity(
                                     opacity: 0.7,
                                     child: Text(
-                                      '$sunsetHour: $sunsetMin',
+                                      sunsetText,
                                       style: const TextStyle(
                                           fontSize: 23,
                                           fontWeight: FontWeight.bold),
@@ -768,25 +831,42 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   Widget searchButton() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 220.0, top: 40),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 120,
-            child: _searchTextField(),
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 40.0),
+          child: IconButton(
+              onPressed: () {
+                setState(() {
+                  getWeatherData(q: city);
+                  markerLat = cPosition?.latitude;
+                  markerLon = cPosition?.longitude;
+                });
+              },
+              icon: const Icon(Icons.location_on)),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 170.0, top: 40),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 120,
+                child: _searchTextField(),
+              ),
+              IconButton(
+                onPressed: _onSearchPressed,
+                icon: _searchIcon,
+              ),
+            ],
           ),
-          IconButton(
-            onPressed: _onSearchPressed,
-            icon: _searchIcon,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget drawer() {
     return Drawer(
+        backgroundColor: Colors.white10,
         elevation: 0.0,
         child: ListView(children: [
           const Padding(padding: EdgeInsets.only(top: 15)),
@@ -801,22 +881,14 @@ class MyHomePageState extends State<MyHomePage> {
             ),
           ),
           const Padding(padding: EdgeInsets.only(top: 20)),
-          Row(
-            children: [
-              IconButton(
-                  onPressed: () {
-                    locSvc.getCurrentPosition();
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.location_on)),
-              const Text('Mevcut Konum'),
-            ],
-          ),
-          favCard(),
+          SizedBox(
+              height: 750,
+              width: 300,
+              child: favCard()),
         ]));
   }
 
-  static Widget map() {
+  Widget map() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       color: Colors.transparent,
@@ -853,7 +925,6 @@ class MyHomePageState extends State<MyHomePage> {
                           TextButton(
                               onPressed: () {
                                 mapSelected = 'wind_new';
-                                print(mapSelected);
                                 _onMapPressed();
                               },
                               child: const Text('W')),
@@ -942,203 +1013,218 @@ class MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-}
 
-Widget _weatherCard(WeatherModel wData, bool isToday) {
-  initializeDateFormatting('tr_TR', null);
-  Intl.defaultLocale = 'tr_TR';
-  DateFormat dateFormat = isToday ? DateFormat('EEEE') : DateFormat('E');
-  final dateText = dateFormat
-      .format(DateTime.fromMillisecondsSinceEpoch(wData.dt?.toInt() * 1000))
-      .toString();
-  var mainTemp = wData.main?.temp.runtimeType != double
-      ? double.parse(wData.main!.temp.toString())
-      : wData.main?.temp;
-  var tmpTemp = ((mainTemp) * 2).round() / 2;
-  final tempText = '$tmpTemp °C';
-  List<String>? tmpDesc =
-      wData.weather?.first.description.toString().split(' ');
-  for (int i = 0; i < tmpDesc!.length; i++) {
-    tmpDesc[i] = globals.StringExtension(tmpDesc[i]).toCap;
-  }
-  final descText = tmpDesc.join(' ');
+  Widget _weatherCard(WeatherModel wData, bool isToday) {
+    initializeDateFormatting('tr_TR', null);
+    Intl.defaultLocale = 'tr_TR';
+    DateFormat dateFormat = isToday ? DateFormat('EEEE') : DateFormat('E');
+    final dateText = dateFormat
+        .format(DateTime.fromMillisecondsSinceEpoch(wData.dt?.toInt() * 1000))
+        .toString();
+    var mainTemp = wData.main?.temp.runtimeType != double
+        ? double.parse(wData.main!.temp.toString())
+        : wData.main?.temp;
+    var tmpTemp = ((mainTemp) * 2).round() / 2;
+    final tempText = '$tmpTemp °C';
+    List<String>? tmpDesc =
+        wData.weather?.first.description.toString().split(' ');
+    for (int i = 0; i < tmpDesc!.length; i++) {
+      tmpDesc[i] = globals.StringExtension(tmpDesc[i]).toCap;
+    }
+    final descText = tmpDesc.join(' ');
 
-  return Column(
-    children: [
-      Text(
-        dateText,
-        style: TextStyle(shadows: const <Shadow>[
-          Shadow(
-            blurRadius: 3.0,
-            color: Color.fromARGB(255, 0, 0, 0),
-          ),
-        ], color: Colors.white, fontSize: isToday ? 0 : 24),
-        textAlign: TextAlign.center,
-      ),
-      const Padding(padding: EdgeInsets.only(top: 5)),
-      Text(
-        tempText,
-        style: TextStyle(shadows: const <Shadow>[
-          Shadow(
-            blurRadius: 3.0,
-            color: Color.fromARGB(255, 0, 0, 0),
-          ),
-        ], color: Colors.white, fontSize: isToday ? 50 : 16),
-        textAlign: TextAlign.center,
-      ),
-      Padding(
-          padding: const EdgeInsets.only(top: 15, bottom: 20),
-          child: iconL(wData)),
-      SizedBox(
-        height: 50,
-        child: Text(
-          descText,
+    return Column(
+      children: [
+        Text(
+          dateText,
           style: TextStyle(shadows: const <Shadow>[
             Shadow(
               blurRadius: 3.0,
               color: Color.fromARGB(255, 0, 0, 0),
             ),
-          ], fontSize: isToday ? 40 : 14),
+          ], color: Colors.white, fontSize: isToday ? 0 : 24),
+          textAlign: TextAlign.center,
         ),
-      ),
-    ],
-  );
-}
-
-Widget iconL(WeatherModel wData) {
-  Map<String, String> descL = {
-    '01d': 'assets/images/icon/01d.png',
-    '01n': 'assets/images/icon/01n.png',
-    '02d': 'assets/images/icon/04d.png',
-    '02n': 'assets/images/icon/04n.png',
-    '03d': 'assets/images/icon/03d.png',
-    '03n': 'assets/images/icon/03d.png',
-    '04d': 'assets/images/icon/03d.png',
-    '04n': 'assets/images/icon/03d.png',
-    '09d': 'assets/images/icon/09d.png',
-    '09n': 'assets/images/icon/09d.png',
-    '10d': 'assets/images/icon/10d.png',
-    '10n': 'assets/images/icon/10n.png',
-    '11d': 'assets/images/icon/11d.png',
-    '11n': 'assets/images/icon/11d.png',
-    '13d': 'assets/images/icon/13d.png',
-    '13n': 'assets/images/icon/13d.png',
-    '50d': 'assets/images/icon/50d.png',
-    '50n': 'assets/images/icon/50d.png',
-  };
-
-  return Image(image: AssetImage(descL[wData.weather?.first.icon]!));
-}
-
-Widget favCard() {
-  return SizedBox(
-    height: double.maxFinite,
-    width: double.infinity,
-    child: ListView.builder(
-        padding: const EdgeInsets.all(8),
-        itemCount: globals.favPlaces?.length,
-        itemBuilder: (BuildContext context, int index) {
-          return InkWell(
-            onTap: () {},
-            child: Slidable(
-              key: const ValueKey(1),
-              endActionPane: ActionPane(
-                motion: const ScrollMotion(),
-                dismissible: DismissiblePane(onDismissed: () {}),
-                children: const [
-                  SlidableAction(
-                    onPressed: doNothing,
-                    backgroundColor: Color(0xFFFE4A49),
-                    foregroundColor: Colors.white,
-                    icon: Icons.delete,
-                  ),
-                ],
+        const Padding(padding: EdgeInsets.only(top: 5)),
+        Text(
+          tempText,
+          style: TextStyle(shadows: const <Shadow>[
+            Shadow(
+              blurRadius: 3.0,
+              color: Color.fromARGB(255, 0, 0, 0),
+            ),
+          ], color: Colors.white, fontSize: isToday ? 50 : 16),
+          textAlign: TextAlign.center,
+        ),
+        Padding(
+            padding: const EdgeInsets.only(top: 15, bottom: 20),
+            child: iconL(wData)),
+        SizedBox(
+          height: 50,
+          child: Text(
+            descText,
+            style: TextStyle(shadows: const <Shadow>[
+              Shadow(
+                blurRadius: 3.0,
+                color: Color.fromARGB(255, 0, 0, 0),
               ),
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0)),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    image: DecorationImage(
-                      image: MyHomePageState.background(),
-                      fit: BoxFit.fill,
+            ], fontSize: isToday ? 40 : 14),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget iconL(WeatherModel wData) {
+    Map<String, String> descL = {
+      '01d': 'assets/images/icon/01d.png',
+      '01n': 'assets/images/icon/01n.png',
+      '02d': 'assets/images/icon/03d.png',
+      '02n': 'assets/images/icon/03n.png',
+      '03d': 'assets/images/icon/03d.png',
+      '03n': 'assets/images/icon/03d.png',
+      '04d': 'assets/images/icon/04d.png',
+      '04n': 'assets/images/icon/04d.png',
+      '09d': 'assets/images/icon/09d.png',
+      '09n': 'assets/images/icon/09d.png',
+      '10d': 'assets/images/icon/10d.png',
+      '10n': 'assets/images/icon/10n.png',
+      '11d': 'assets/images/icon/11d.png',
+      '11n': 'assets/images/icon/11d.png',
+      '13d': 'assets/images/icon/13d.png',
+      '13n': 'assets/images/icon/13d.png',
+      '50d': 'assets/images/icon/50d.png',
+      '50n': 'assets/images/icon/50d.png',
+    };
+
+    return Image(image: AssetImage(descL[wData.weather?.first.icon]!));
+  }
+
+  Widget favCard() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+          child: ListView.builder(
+              scrollDirection: Axis.vertical,
+              padding: const EdgeInsets.all(8),
+              itemCount: globals.favPlaces?.length,
+              itemBuilder: (BuildContext context, int index) {
+                return InkWell(
+                  onTap: () {
+                    globals.favDelCity = globals.favPlaces?[index].name;
+                    Navigator.pop(context);
+                    getWeatherData(q: globals.favDelCity);
+                  },
+                  child: Slidable(
+                    key: const ValueKey(1),
+                    endActionPane: ActionPane(
+                      extentRatio: 0.25,
+                      motion: const ScrollMotion(),
+                      dismissible: DismissiblePane(onDismissed: () {}),
+                      children: [
+                        SlidableAction(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(20)),
+                          flex: 3,
+                          onPressed: (context) {
+                            setState(() {
+                              (globals.favPlaces)
+                                  ?.remove((globals.favPlaces)?[index]);
+                            });
+                          },
+                          backgroundColor: const Color(0xFFFE4A49),
+                          foregroundColor: Colors.white,
+                          icon: Icons.delete,
+                        ),
+                      ],
                     ),
-                  ),
-                  child: SizedBox(
-                    height: 103,
-                    width: 300,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${globals.favPlaces?[index].name}',
-                                    style: const TextStyle(fontSize: 18),
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    '${globals.favPlaces?[index].weather?.first.description}',
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-                                  SizedBox(height: 18,)
-                                ],
-                              ),
-                            ],
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0)),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          image: DecorationImage(
+                            image: favBackground(
+                                globals.favPlaces![index].weather!.first.icon!),
+                            fit: BoxFit.fill,
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                        ),
+                        child: SizedBox(
+                          height: 103,
+                          width: 300,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      '${globals.favPlaces?[index].main?.temp}',
-                                      style: const TextStyle(fontSize: 22),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${globals.favPlaces?[index].name}',
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                          '${globals.favPlaces?[index].weather?.first.description}',
+                                          style: const TextStyle(fontSize: 13),
+                                        ),
+                                        const SizedBox(
+                                          height: 18,
+                                        )
+                                      ],
                                     ),
-                                    const Text(
-                                      ' °C',
-                                      style: TextStyle(fontSize: 22),
-                                    )
                                   ],
                                 ),
-                              ),
-                            ],
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 10.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            '${globals.favPlaces?[index].main?.temp}',
+                                            style:
+                                                const TextStyle(fontSize: 22),
+                                          ),
+                                          const Text(
+                                            ' °C',
+                                            style: TextStyle(fontSize: 22),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            ),
-          );
-        }),
-  );
+                );
+              }),
+        ),
+      ],
+    );
+  }
 }
-
-void doNothing(BuildContext context) {}
 
 class MapClient extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
-    //request.url.queryParameters.putIfAbsent('appid',()=> '7b0b2395e0a953df1afeeb7ae7626527');
-    //http.BaseRequest tempReq = request;
-    //print(request.url.toString());
     return http.Request('GET',
             Uri.parse("${request.url}?appid=7b0b2395e0a953df1afeeb7ae7626527"))
         .send();
-
-    //tempReq.finalize();
-    //throw UnimplementedError();
   }
 }
