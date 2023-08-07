@@ -34,7 +34,6 @@ class MyHomePageState extends State<MyHomePage> {
   late final LocSvc locSvc;
   static Position? cPosition;
   static Position? currentPosition;
-  bool isMapOption = false;
   bool isAddOption = false;
   static bool isFavBg = false;
   static String mapSelected = 'temp_new';
@@ -98,12 +97,6 @@ class MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _onMapPressed() {
-    setState(() {
-      isMapOption = !isMapOption;
-    });
-  }
-
   void addItemToList() {
     setState(() {
       //for or toList;
@@ -119,8 +112,7 @@ class MyHomePageState extends State<MyHomePage> {
 
       if (!haveCity) {
         globals.favPlaces?.insert(0, weatherData!);
-      } else {
-      }
+      } else {}
     });
   }
 
@@ -139,6 +131,10 @@ class MyHomePageState extends State<MyHomePage> {
       },
       child: weatherData != null
           ? Scaffold(
+              appBar: AppBar(
+                backgroundColor: const Color(0x44000000),
+                elevation: 0,
+              ),
               drawer: drawer(),
               resizeToAvoidBottomInset: false,
               body: Stack(children: [
@@ -197,7 +193,7 @@ class MyHomePageState extends State<MyHomePage> {
                 });
               },
               icon: const Icon(Icons.keyboard_arrow_left)),
-          const Padding(padding: EdgeInsets.only(left: 260)),
+          const Spacer(),
           TextButton(
               onPressed: () {
                 addItemToList();
@@ -368,35 +364,35 @@ class MyHomePageState extends State<MyHomePage> {
       children: [
         Row(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                height: 180,
-                width: 180,
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0)),
-                  color: Colors.transparent,
-                  child: Column(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 30, top: 4),
-                        child: Opacity(
-                          opacity: 0.7,
-                          child: Text(
-                            'Gün Doğumu',
-                            style: TextStyle(fontSize: 20),
-                            textAlign: TextAlign.left,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  height: 180,
+                  width: 180,
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0)),
+                    color: Colors.transparent,
+                    child: Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(right: 30, top: 4),
+                          child: Opacity(
+                            opacity: 0.7,
+                            child: Text(
+                              'Gün Doğumu',
+                              style: TextStyle(fontSize: 20),
+                              textAlign: TextAlign.left,
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4.0),
-                              child: Column(
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20.0),
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              Column(
                                 children: [
                                   Opacity(
                                       opacity: 0.7,
@@ -408,79 +404,24 @@ class MyHomePageState extends State<MyHomePage> {
                                       )),
                                 ],
                               ),
-                            ),
-                            const SizedBox(
-                                height: 90,
-                                width: 90,
-                                child: Image(
-                                    image: AssetImage(
-                                        'assets/images/detail/sunrise.png'))),
-                          ],
+                              const Spacer(),
+                              const SizedBox(
+                                  height: 90,
+                                  width: 90,
+                                  child: Image(
+                                      image: AssetImage(
+                                          'assets/images/detail/sunrise.png'))),
+                              const Spacer(),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-            SizedBox(
-              height: 180,
-              width: 180,
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0)),
-                color: Colors.transparent,
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(right: 50.0, top: 4),
-                      child: Opacity(
-                        opacity: 0.7,
-                        child: Text(
-                          'Gün Batımı',
-                          style: TextStyle(fontSize: 20),
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 4.0),
-                            child: Column(
-                              children: [
-                                Opacity(
-                                    opacity: 0.7,
-                                    child: Text(
-                                      sunsetText,
-                                      style: const TextStyle(
-                                          fontSize: 23,
-                                          fontWeight: FontWeight.bold),
-                                    )),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(
-                              height: 90,
-                              width: 90,
-                              child: Image(
-                                  image: AssetImage(
-                                      'assets/images/detail/sunset.png'))),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            Expanded(
               child: SizedBox(
                 height: 180,
                 width: 180,
@@ -495,7 +436,7 @@ class MyHomePageState extends State<MyHomePage> {
                         child: Opacity(
                           opacity: 0.7,
                           child: Text(
-                            'Nem Oranı',
+                            'Gün Batımı',
                             style: TextStyle(fontSize: 20),
                             textAlign: TextAlign.left,
                           ),
@@ -505,23 +446,27 @@ class MyHomePageState extends State<MyHomePage> {
                         padding: const EdgeInsets.only(top: 20.0),
                         child: Row(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 20.0),
-                              child: Opacity(
-                                  opacity: 0.7,
-                                  child: Text(
-                                    '${weatherData?.main?.humidity}',
-                                    style: const TextStyle(
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.bold),
-                                  )),
+                            const Spacer(),
+                            Column(
+                              children: [
+                                Opacity(
+                                    opacity: 0.7,
+                                    child: Text(
+                                      sunsetText,
+                                      style: const TextStyle(
+                                          fontSize: 23,
+                                          fontWeight: FontWeight.bold),
+                                    )),
+                              ],
                             ),
+                            const Spacer(),
                             const SizedBox(
                                 height: 90,
                                 width: 90,
                                 child: Image(
                                     image: AssetImage(
-                                        'assets/images/detail/humidity.png'))),
+                                        'assets/images/detail/sunset.png'))),
+                            const Spacer(),
                           ],
                         ),
                       ),
@@ -530,60 +475,64 @@ class MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-            SizedBox(
-              height: 180,
-              width: 180,
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0)),
-                color: Colors.transparent,
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(right: 80.0, top: 4),
-                      child: Opacity(
-                        opacity: 0.7,
-                        child: Text(
-                          'Basınç',
-                          style: TextStyle(fontSize: 20),
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 5.0),
-                            child: Opacity(
-                                opacity: 0.7,
-                                child: Text(
-                                  '${weatherData?.main?.pressure}',
-                                  style: const TextStyle(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.bold),
-                                )),
-                          ),
-                          const SizedBox(
-                              height: 90,
-                              width: 90,
-                              child: Image(
-                                  image: AssetImage(
-                                      'assets/images/detail/pressure.png'))),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
         Row(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  height: 180,
+                  width: 180,
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0)),
+                    color: Colors.transparent,
+                    child: Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(right: 50.0, top: 4),
+                          child: Opacity(
+                            opacity: 0.7,
+                            child: Text(
+                              'Nem Oranı',
+                              style: TextStyle(fontSize: 20),
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20.0),
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              Opacity(
+                                  opacity: 0.7,
+                                  child: Text(
+                                    '${weatherData?.main?.humidity}',
+                                    style: const TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold),
+                                  )),
+                              const Spacer(),
+                              const SizedBox(
+                                  height: 90,
+                                  width: 90,
+                                  child: Image(
+                                      image: AssetImage(
+                                          'assets/images/detail/humidity.png'))),
+                              const Spacer(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
               child: SizedBox(
                 height: 180,
                 width: 180,
@@ -594,11 +543,11 @@ class MyHomePageState extends State<MyHomePage> {
                   child: Column(
                     children: [
                       const Padding(
-                        padding: EdgeInsets.only(right: 10.0, top: 4),
+                        padding: EdgeInsets.only(right: 80.0, top: 4),
                         child: Opacity(
                           opacity: 0.7,
                           child: Text(
-                            'Görüş Mesafesi',
+                            'Basınç',
                             style: TextStyle(fontSize: 20),
                             textAlign: TextAlign.left,
                           ),
@@ -608,9 +557,64 @@ class MyHomePageState extends State<MyHomePage> {
                         padding: const EdgeInsets.only(top: 20.0),
                         child: Row(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0),
-                              child: Column(
+                            const Spacer(),
+                            Opacity(
+                                opacity: 0.7,
+                                child: Text(
+                                  '${weatherData?.main?.pressure}',
+                                  style: const TextStyle(
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.bold),
+                                )),
+                            const Spacer(),
+                            const SizedBox(
+                                height: 90,
+                                width: 90,
+                                child: Image(
+                                    image: AssetImage(
+                                        'assets/images/detail/pressure.png'))),
+                            const Spacer(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  height: 180,
+                  width: 180,
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0)),
+                    color: Colors.transparent,
+                    child: Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(right: 10.0, top: 4),
+                          child: Opacity(
+                            opacity: 0.7,
+                            child: Text(
+                              'Görüş Mesafesi',
+                              style: TextStyle(fontSize: 20),
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20.0),
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              Column(
                                 children: [
                                   Opacity(
                                       opacity: 0.7,
@@ -630,48 +634,50 @@ class MyHomePageState extends State<MyHomePage> {
                                       )),
                                 ],
                               ),
-                            ),
-                            const SizedBox(
-                                height: 90,
-                                width: 90,
-                                child: Image(
-                                    image: AssetImage(
-                                        'assets/images/detail/visibility.png'))),
-                          ],
+                              const Spacer(),
+                              const SizedBox(
+                                  height: 90,
+                                  width: 90,
+                                  child: Image(
+                                      image: AssetImage(
+                                          'assets/images/detail/visibility.png'))),
+                              const Spacer(),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-            SizedBox(
-              height: 180,
-              width: 180,
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0)),
-                color: Colors.transparent,
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(right: 30.0, top: 4),
-                      child: Opacity(
-                        opacity: 0.7,
-                        child: Text(
-                          'Max - Min °C',
-                          style: TextStyle(fontSize: 20),
-                          textAlign: TextAlign.left,
+            Expanded(
+              child: SizedBox(
+                height: 180,
+                width: 180,
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0)),
+                  color: Colors.transparent,
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 30.0, top: 4),
+                        child: Opacity(
+                          opacity: 0.7,
+                          child: Text(
+                            'Max - Min °C',
+                            style: TextStyle(fontSize: 20),
+                            textAlign: TextAlign.left,
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 1.0),
-                            child: Column(
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: Row(
+                          children: [
+                            const Spacer(),
+                            Column(
                               children: [
                                 Opacity(
                                     opacity: 0.7,
@@ -691,17 +697,19 @@ class MyHomePageState extends State<MyHomePage> {
                                     )),
                               ],
                             ),
-                          ),
-                          const SizedBox(
-                              height: 90,
-                              width: 90,
-                              child: Image(
-                                  image: AssetImage(
-                                      'assets/images/detail/max-min.png'))),
-                        ],
+                            const Spacer(),
+                            const SizedBox(
+                                height: 90,
+                                width: 90,
+                                child: Image(
+                                    image: AssetImage(
+                                        'assets/images/detail/max-min.png'))),
+                            const Spacer(),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -709,35 +717,35 @@ class MyHomePageState extends State<MyHomePage> {
         ),
         Row(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                height: 180,
-                width: 180,
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0)),
-                  color: Colors.transparent,
-                  child: Column(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 45.0, top: 4),
-                        child: Opacity(
-                          opacity: 0.7,
-                          child: Text(
-                            'Rüzgar Hızı',
-                            style: TextStyle(fontSize: 20),
-                            textAlign: TextAlign.left,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  height: 180,
+                  width: 180,
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0)),
+                    color: Colors.transparent,
+                    child: Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(right: 45.0, top: 4),
+                          child: Opacity(
+                            opacity: 0.7,
+                            child: Text(
+                              'Rüzgar Hızı',
+                              style: TextStyle(fontSize: 20),
+                              textAlign: TextAlign.left,
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0),
-                              child: Column(
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20.0),
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              Column(
                                 children: [
                                   Opacity(
                                       opacity: 0.7,
@@ -757,48 +765,50 @@ class MyHomePageState extends State<MyHomePage> {
                                       )),
                                 ],
                               ),
-                            ),
-                            const SizedBox(
-                                height: 90,
-                                width: 90,
-                                child: Image(
-                                    image: AssetImage(
-                                        'assets/images/detail/wind-speed.png'))),
-                          ],
+                              const Spacer(),
+                              const SizedBox(
+                                  height: 90,
+                                  width: 90,
+                                  child: Image(
+                                      image: AssetImage(
+                                          'assets/images/detail/wind-speed.png'))),
+                              const Spacer(),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-            SizedBox(
-              height: 180,
-              width: 180,
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0)),
-                color: Colors.transparent,
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(right: 10.0, top: 4),
-                      child: Opacity(
-                        opacity: 0.7,
-                        child: Text(
-                          'Deniz Seviyesi',
-                          style: TextStyle(fontSize: 20),
-                          textAlign: TextAlign.left,
+            Expanded(
+              child: SizedBox(
+                height: 180,
+                width: 180,
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0)),
+                  color: Colors.transparent,
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 10.0, top: 4),
+                        child: Opacity(
+                          opacity: 0.7,
+                          child: Text(
+                            'Deniz Seviyesi',
+                            style: TextStyle(fontSize: 20),
+                            textAlign: TextAlign.left,
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 4.0),
-                            child: Column(
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: Row(
+                          children: [
+                            const Spacer(),
+                            Column(
                               children: [
                                 Opacity(
                                     opacity: 0.7,
@@ -810,22 +820,24 @@ class MyHomePageState extends State<MyHomePage> {
                                     )),
                               ],
                             ),
-                          ),
-                          const SizedBox(
-                              height: 90,
-                              width: 90,
-                              child: Image(
-                                  image: AssetImage(
-                                      'assets/images/detail/sea-level.png'))),
-                        ],
+                            const Spacer(),
+                            const SizedBox(
+                                height: 90,
+                                width: 90,
+                                child: Image(
+                                    image: AssetImage(
+                                        'assets/images/detail/sea-level.png'))),
+                            const Spacer(),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
-        ),
+        )
       ],
     );
   }
@@ -834,7 +846,7 @@ class MyHomePageState extends State<MyHomePage> {
     return Row(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 40.0),
+          padding: const EdgeInsets.only(top: 30.0),
           child: IconButton(
               onPressed: () {
                 setState(() {
@@ -845,8 +857,9 @@ class MyHomePageState extends State<MyHomePage> {
               },
               icon: const Icon(Icons.location_on)),
         ),
+        const Spacer(),
         Padding(
-          padding: const EdgeInsets.only(left: 170.0, top: 40),
+          padding: const EdgeInsets.only(top: 30.0),
           child: Row(
             children: [
               SizedBox(
@@ -881,10 +894,7 @@ class MyHomePageState extends State<MyHomePage> {
             ),
           ),
           const Padding(padding: EdgeInsets.only(top: 20)),
-          SizedBox(
-              height: 750,
-              width: 300,
-              child: favCard()),
+          SizedBox(height: 750, width: 300, child: favCard()),
         ]));
   }
 
@@ -899,66 +909,7 @@ class MyHomePageState extends State<MyHomePage> {
               const SizedBox(
                 width: 10,
               ),
-              isMapOption
-                  ? Expanded(
-                      flex: 20,
-                      child: Row(
-                        children: [
-                          TextButton(
-                              onPressed: () {
-                                mapSelected = 'clouds_new';
-                                _onMapPressed();
-                              },
-                              child: const Text('C')),
-                          TextButton(
-                              onPressed: () {
-                                mapSelected = 'precipitation_new';
-                                _onMapPressed();
-                              },
-                              child: const Text('P')),
-                          TextButton(
-                              onPressed: () {
-                                mapSelected = 'pressure_new';
-                                _onMapPressed();
-                              },
-                              child: const Text('S')),
-                          TextButton(
-                              onPressed: () {
-                                mapSelected = 'wind_new';
-                                _onMapPressed();
-                              },
-                              child: const Text('W')),
-                          TextButton(
-                              onPressed: () {
-                                mapSelected = 'temp_new';
-                                _onMapPressed();
-                              },
-                              child: const Text('T')),
-                        ],
-                      ),
-                    )
-                  : const Row(
-                      children: [
-                        Opacity(
-                          opacity: 0.7,
-                          child: Text(
-                            'Harita',
-                            style: TextStyle(fontSize: 20),
-                            textAlign: TextAlign.left,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 265,
-                        ),
-                      ],
-                    ),
-              IconButton(
-                  onPressed: () {
-                    _onMapPressed();
-                  },
-                  icon: isMapOption
-                      ? const Icon(Icons.close)
-                      : const Icon(Icons.map_outlined))
+              mapTile()
             ],
           ),
           Padding(
@@ -968,8 +919,8 @@ class MyHomePageState extends State<MyHomePage> {
               Column(
                 children: [
                   SizedBox(
-                    width: 400,
-                    height: 400,
+                    width: 1700,
+                    height: 500,
                     child: FlutterMap(
                       options: MapOptions(
                         center: latlng.LatLng((markerLat! - 2), markerLon!),
@@ -1009,6 +960,57 @@ class MyHomePageState extends State<MyHomePage> {
               ),
             ]),
           )
+        ],
+      ),
+    );
+  }
+
+  Widget mapTile() {
+    return Expanded(
+      flex: 20,
+      child: Row(
+        children: [
+          const Spacer(),
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  mapSelected = 'clouds_new';
+                });
+              },
+              child: const Text('Bulut')),
+          const Spacer(),
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  mapSelected = 'precipitation_new';
+                });
+              },
+              child: const Text('Yağış')),
+          const Spacer(),
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  mapSelected = 'pressure_new';
+                });
+              },
+              child: const Text('Basınç')),
+          const Spacer(),
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  mapSelected = 'wind_new';
+                });
+              },
+              child: const Text('Rüzgar')),
+          const Spacer(),
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  mapSelected = 'temp_new';
+                });
+              },
+              child: const Text('Sıcaklık')),
+          const Spacer(),
         ],
       ),
     );

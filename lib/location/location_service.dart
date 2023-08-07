@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LocSvc {
   late final BuildContext _context;
@@ -9,6 +10,28 @@ class LocSvc {
   }
 
   Future<Position> getCurrentPosition() async {
+  /*  var stat = await Permission.location.status;
+    if(stat.isDenied) {
+      Map<Permission, PermissionStatus> status = await [
+        Permission.location
+      ].request();
+    }
+    if(await Permission.location.serviceStatus.isEnabled) {
+      return Position(
+        longitude: 0,
+        latitude: 0,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        heading: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
+    } else {
+
+    }*/
+
+
     final hasPermission = await _handleLocationPermission();
     if (!hasPermission) {
       return Position(
